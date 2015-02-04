@@ -83,7 +83,7 @@ void block_iter_seek_to_first(struct block_iter *);
 void block_iter_seek_to_last(struct block_iter *);
 void block_iter_seek(struct block_iter *, const uint8_t *key, size_t key_len);
 bool block_iter_next(struct block_iter *);
-void block_iter_prev(struct block_iter *);
+bool block_iter_prev(struct block_iter *);
 bool block_iter_get(struct block_iter *,
 	const uint8_t **key, size_t *key_len,
 	const uint8_t **val, size_t *val_len);

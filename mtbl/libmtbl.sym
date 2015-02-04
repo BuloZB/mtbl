@@ -16,6 +16,7 @@ global:
         mtbl_iter_destroy;
         mtbl_iter_init;
         mtbl_iter_next;
+        mtbl_iter_prev;
         mtbl_merger_add_source;
         mtbl_merger_destroy;
         mtbl_merger_init;

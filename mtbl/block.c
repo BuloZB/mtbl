@@ -282,17 +282,19 @@ block_iter_next(struct block_iter *bi)
 	return (block_iter_valid(bi));
 }
 
-void 
+bool
 block_iter_prev(struct block_iter *bi)
 {
-	assert(block_iter_valid(bi));
+	if (!block_iter_valid(bi))
+		return (false);
+
 	const uint32_t original = bi->current;
 	while (get_restart_point(bi, bi->restart_index) >= original) {
 		if (bi->restart_index == 0) {
 			/* no more entries */
 			bi->current = bi->restarts;
 			bi->restart_index = bi->num_restarts;
-			return;
+			return (block_iter_valid(bi));
 		}
 		bi->restart_index -= 1;
 	}
@@ -301,6 +303,8 @@ block_iter_prev(struct block_iter *bi)
 	do {
 		/* loop until end of current entry hits the start of original entry */
 	} while (parse_next_key(bi) && next_entry_offset(bi) < original);
+
+	return (block_iter_valid(bi));
 }
 
 bool

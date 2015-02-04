@@ -78,13 +78,20 @@ typedef void
 (*mtbl_iter_free_func)(void *);
 
 struct mtbl_iter *
-mtbl_iter_init(mtbl_iter_next_func, mtbl_iter_free_func, void *clos);
+mtbl_iter_init(mtbl_iter_next_func, mtbl_iter_next_func, mtbl_iter_free_func, void *clos);
 
 void
 mtbl_iter_destroy(struct mtbl_iter **);
 
 mtbl_res
 mtbl_iter_next(
+	struct mtbl_iter *,
+	const uint8_t **key, size_t *len_key,
+	const uint8_t **val, size_t *len_val)
+__attribute__((warn_unused_result));
+
+mtbl_res
+mtbl_iter_prev(
 	struct mtbl_iter *,
 	const uint8_t **key, size_t *len_key,
 	const uint8_t **val, size_t *len_val)

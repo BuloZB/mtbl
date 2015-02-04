@@ -298,7 +298,7 @@ merger_iter(void *clos)
 		const struct mtbl_source *s = source_vec_value(m->sources, i);
 		merger_iter_add_entry(it, mtbl_source_iter(s));
 	}
-	return (mtbl_iter_init(merger_iter_next, merger_iter_free, it));
+	return (mtbl_iter_init(merger_iter_next, 0, merger_iter_free, it));
 }
 
 static struct mtbl_iter *
@@ -316,7 +316,7 @@ merger_get(void *clos, const uint8_t *key, size_t len_key)
 		merger_iter_free(it);
 		return (NULL);
 	}
-	return (mtbl_iter_init(merger_iter_next, merger_iter_free, it));
+	return (mtbl_iter_init(merger_iter_next, 0, merger_iter_free, it));
 }
 
 static struct mtbl_iter *
@@ -336,7 +336,7 @@ merger_get_range(void *clos,
 		merger_iter_free(it);
 		return (NULL);
 	}
-	return (mtbl_iter_init(merger_iter_next, merger_iter_free, it));
+	return (mtbl_iter_init(merger_iter_next, 0, merger_iter_free, it));
 }
 
 static struct mtbl_iter *
@@ -355,5 +355,5 @@ merger_get_prefix(void *clos,
 		merger_iter_free(it);
 		return (NULL);
 	}
-	return (mtbl_iter_init(merger_iter_next, merger_iter_free, it));
+	return (mtbl_iter_init(merger_iter_next, 0, merger_iter_free, it));
 }

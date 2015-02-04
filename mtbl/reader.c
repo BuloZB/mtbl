@@ -57,6 +57,9 @@ reader_init_madvise(struct mtbl_reader *);
 static mtbl_res
 reader_iter_next(void *, const uint8_t **, size_t *, const uint8_t **, size_t *);
 
+static mtbl_res
+reader_iter_prev(void *, const uint8_t **, size_t *, const uint8_t **, size_t *);
+
 static void
 reader_iter_free(void *);
 
@@ -343,7 +346,7 @@ reader_iter(void *clos)
 	it->first = true;
 	it->valid = true;
 	it->it_type = READER_ITER_TYPE_ITER;
-	return (mtbl_iter_init(reader_iter_next, reader_iter_free, it));
+	return (mtbl_iter_init(reader_iter_next, reader_iter_prev, reader_iter_free, it));
 }
 
 static struct reader_iter *
@@ -381,7 +384,7 @@ reader_get(void *clos, const uint8_t *key, size_t len_key)
 	it->k = ubuf_init(len_key);
 	ubuf_append(it->k, key, len_key);
 	it->it_type = READER_ITER_TYPE_GET;
-	return (mtbl_iter_init(reader_iter_next, reader_iter_free, it));
+	return (mtbl_iter_init(reader_iter_next, reader_iter_prev, reader_iter_free, it));
 }
 
 static struct mtbl_iter *
@@ -394,7 +397,7 @@ reader_get_prefix(void *clos, const uint8_t *key, size_t len_key)
 	it->k = ubuf_init(len_key);
 	ubuf_append(it->k, key, len_key);
 	it->it_type = READER_ITER_TYPE_GET_PREFIX;
-	return (mtbl_iter_init(reader_iter_next, reader_iter_free, it));
+	return (mtbl_iter_init(reader_iter_next, reader_iter_prev, reader_iter_free, it));
 }
 
 static struct mtbl_iter *
@@ -409,7 +412,7 @@ reader_get_range(void *clos,
 	it->k = ubuf_init(len_key1);
 	ubuf_append(it->k, key1, len_key1);
 	it->it_type = READER_ITER_TYPE_GET_RANGE;
-	return (mtbl_iter_init(reader_iter_next, reader_iter_free, it));
+	return (mtbl_iter_init(reader_iter_next, reader_iter_prev, reader_iter_free, it));
 }
 
 static void
@@ -443,6 +446,61 @@ reader_iter_next(void *v,
 		block_destroy(&it->b);
 		block_iter_destroy(&it->bi);
 		if (!block_iter_next(it->index_iter))
+			return (mtbl_res_failure);
+		it->b = get_block_at_index(it->r, it->index_iter);
+		it->bi = block_iter_init(it->b);
+		block_iter_seek_to_first(it->bi);
+		it->valid = block_iter_get(it->bi, key, len_key, val, len_val);
+		if (!it->valid)
+			return (mtbl_res_failure);
+	}
+
+	switch (it->it_type) {
+	case READER_ITER_TYPE_ITER:
+		break;
+	case READER_ITER_TYPE_GET:
+		if (bytes_compare(*key, *len_key, ubuf_data(it->k), ubuf_size(it->k)) != 0)
+			it->valid = false;
+		break;
+	case READER_ITER_TYPE_GET_PREFIX:
+		if (!(ubuf_size(it->k) <= *len_key &&
+		      memcmp(ubuf_data(it->k), *key, ubuf_size(it->k)) == 0))
+		{
+			it->valid = false;
+		}
+		break;
+	case READER_ITER_TYPE_GET_RANGE:
+		if (bytes_compare(*key, *len_key, ubuf_data(it->k), ubuf_size(it->k)) > 0)
+			it->valid = false;
+		break;
+	default:
+		assert(0);
+	}
+
+	if (it->valid)
+		return (mtbl_res_success);
+	return (mtbl_res_failure);
+}
+
+static mtbl_res
+reader_iter_prev(void *v,
+	       const uint8_t **key, size_t *len_key,
+	       const uint8_t **val, size_t *len_val)
+{
+	struct reader_iter *it = (struct reader_iter *) v;
+
+	if (!it->first) {
+		block_iter_prev(it->bi);
+	} else {
+		block_iter_seek_to_last(it->bi);
+		it->first = false;
+	}
+
+	it->valid = block_iter_get(it->bi, key, len_key, val, len_val);
+	if (!it->valid) {
+		block_destroy(&it->b);
+		block_iter_destroy(&it->bi);
+		if (!block_iter_prev(it->index_iter))
 			return (mtbl_res_failure);
 		it->b = get_block_at_index(it->r, it->index_iter);
 		it->bi = block_iter_init(it->b);
