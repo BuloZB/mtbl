@@ -42,6 +42,18 @@ dump(const char *fname)
 		print_string(val, len_val, stdout);
 		fputc('\n', stdout);
 	}
+
+	fprintf(stderr, "Now backwards!\n");
+
+	mtbl_iter_destroy(&it);
+	it = mtbl_source_iter(mtbl_reader_source(r));
+
+	while (mtbl_iter_prev(it, &key, &len_key, &val, &len_val)) {
+		print_string(key, len_key, stdout);
+		fputc(' ', stdout);
+		print_string(val, len_val, stdout);
+		fputc('\n', stdout);
+	}
 	
 	mtbl_iter_destroy(&it);
 	mtbl_reader_destroy(&r);
