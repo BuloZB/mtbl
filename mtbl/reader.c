@@ -75,6 +75,9 @@ reader_get_prefix(void *, const uint8_t *, size_t);
 static struct mtbl_iter *
 reader_get_range(void *, const uint8_t *, size_t, const uint8_t *, size_t);
 
+static struct mtbl_iter *
+reader_start_prefix(void *, const uint8_t *, size_t);
+
 struct mtbl_reader_options *
 mtbl_reader_options_init(void)
 {
@@ -181,6 +184,7 @@ mtbl_reader_init_fd(int orig_fd, const struct mtbl_reader_options *opt)
 				     reader_get,
 				     reader_get_prefix,
 				     reader_get_range,
+				     reader_start_prefix,
 				     NULL, r);
 	return (r);
 }
@@ -401,6 +405,19 @@ reader_get_prefix(void *clos, const uint8_t *key, size_t len_key)
 }
 
 static struct mtbl_iter *
+reader_start_prefix(void *clos, const uint8_t *key, size_t len_key)
+{
+	struct mtbl_reader *r = (struct mtbl_reader *) clos;
+	struct reader_iter *it = reader_iter_init(r, key, len_key);
+	if (it == NULL)
+		return (NULL);
+	it->k = ubuf_init(len_key);
+	ubuf_append(it->k, key, len_key);
+	it->it_type = READER_ITER_TYPE_ITER;
+	return (mtbl_iter_init(reader_iter_next, reader_iter_prev, reader_iter_free, it));
+}
+
+static struct mtbl_iter *
 reader_get_range(void *clos,
 		 const uint8_t *key0, size_t len_key0,
 		 const uint8_t *key1, size_t len_key1)
@@ -489,12 +506,9 @@ reader_iter_prev(void *v,
 {
 	struct reader_iter *it = (struct reader_iter *) v;
 
-	if (!it->first) {
+	if (!it->first)
 		block_iter_prev(it->bi);
-	} else {
-		block_iter_seek_to_last(it->bi);
-		it->first = false;
-	}
+	it->first = false;
 
 	it->valid = block_iter_get(it->bi, key, len_key, val, len_val);
 	if (!it->valid) {

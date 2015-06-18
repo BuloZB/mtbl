@@ -114,6 +114,9 @@ typedef struct mtbl_iter *
 	const uint8_t *key0, size_t len_key0,
 	const uint8_t *key1, size_t len_key1);
 
+typedef struct mtbl_iter *
+(*mtbl_source_start_prefix_func)(void *, const uint8_t *key, size_t len_key);
+
 typedef void (*mtbl_source_free_func)(void *);
 
 struct mtbl_source *
@@ -122,6 +125,7 @@ mtbl_source_init(
 	mtbl_source_get_func,
 	mtbl_source_get_prefix_func,
 	mtbl_source_get_range_func,
+	mtbl_source_start_prefix_func,
 	mtbl_source_free_func,
 	void *clos);
 
@@ -142,6 +146,9 @@ mtbl_source_get_range(
 	const struct mtbl_source *,
 	const uint8_t *key0, size_t len_key0,
 	const uint8_t *key1, size_t len_key1);
+
+struct mtbl_iter *
+mtbl_source_start_prefix(const struct mtbl_source *, const uint8_t *key, size_t len_key);
 
 mtbl_res
 mtbl_source_write(const struct mtbl_source *, struct mtbl_writer *)

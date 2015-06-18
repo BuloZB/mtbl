@@ -45,6 +45,7 @@ global:
         mtbl_source_get;
         mtbl_source_get_prefix;
         mtbl_source_get_range;
+        mtbl_source_start_prefix;
         mtbl_source_init;
         mtbl_source_iter;
         mtbl_source_write;

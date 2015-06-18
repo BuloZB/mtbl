@@ -71,6 +71,14 @@ fileset_source_get_range(void *clos,
 				     key0, len_key0, key1, len_key1);
 }
 
+static struct mtbl_iter *
+fileset_source_start_prefix(void *clos, const uint8_t *key, size_t len_key)
+{
+	struct mtbl_fileset *f = (struct mtbl_fileset *) clos;
+	mtbl_fileset_reload(f);
+	return mtbl_source_start_prefix(mtbl_merger_source(f->merger), key, len_key);
+}
+
 struct mtbl_fileset_options *
 mtbl_fileset_options_init(void)
 {
@@ -137,6 +145,7 @@ mtbl_fileset_init(const char *fname, const struct mtbl_fileset_options *opt)
 				     fileset_source_get,
 				     fileset_source_get_prefix,
 				     fileset_source_get_range,
+				     fileset_source_start_prefix,
 				     NULL, f);
 	mtbl_fileset_reload(f);
 	return (f);

@@ -21,6 +21,7 @@ struct mtbl_source {
 	mtbl_source_get_func		source_get;
 	mtbl_source_get_prefix_func	source_get_prefix;
 	mtbl_source_get_range_func	source_get_range;
+	mtbl_source_start_prefix_func	source_start_prefix;
 	mtbl_source_free_func		source_free;
 	void				*clos;
 };
@@ -30,6 +31,7 @@ mtbl_source_init(mtbl_source_iter_func source_iter,
 		 mtbl_source_get_func source_get,
 		 mtbl_source_get_prefix_func source_get_prefix,
 		 mtbl_source_get_range_func source_get_range,
+		 mtbl_source_start_prefix_func source_start_prefix,
 		 mtbl_source_free_func source_free,
 		 void *clos)
 {
@@ -37,11 +39,13 @@ mtbl_source_init(mtbl_source_iter_func source_iter,
 	assert(source_get != NULL);
 	assert(source_get_prefix != NULL);
 	assert(source_get_range != NULL);
+	assert(source_start_prefix != NULL);
 	struct mtbl_source *s = my_calloc(1, sizeof(*s));
 	s->source_iter = source_iter;
 	s->source_get = source_get;
 	s->source_get_prefix = source_get_prefix;
 	s->source_get_range = source_get_range;
+	s->source_start_prefix = source_start_prefix;
 	s->source_free = source_free;
 	s->clos = clos;
 	return (s);
@@ -84,6 +88,13 @@ mtbl_source_get_range(const struct mtbl_source *s,
 		      const uint8_t *key1, size_t len_key1)
 {
 	return (s->source_get_range(s->clos, key0, len_key0, key1, len_key1));
+}
+
+struct mtbl_iter *
+mtbl_source_start_prefix(const struct mtbl_source *s,
+		       const uint8_t *key, size_t len_key)
+{
+	return (s->source_start_prefix(s->clos, key, len_key));
 }
 
 mtbl_res
