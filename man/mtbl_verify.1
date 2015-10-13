@@ -1,13 +1,13 @@
 '\" t
-.\"     Title: mtbl_dump
+.\"     Title: mtbl_verify
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 07/17/2015
+.\"      Date: 02/04/2015
 .\"    Manual: \ \&
 .\"    Source: \ \&
 .\"  Language: English
 .\"
-.TH "MTBL_DUMP" "1" "07/17/2015" "\ \&" "\ \&"
+.TH "MTBL_VERIFY" "1" "02/04/2015" "\ \&" "\ \&"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,16 +28,14 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-mtbl_dump \- print key\-value entries from an MTBL file
+mtbl_verify \- verify integrity of an MTBL file\*(Aqs data and index blocks
 .SH "SYNOPSIS"
 .sp
-\fBmtbl_dump\fR [\fI\-s\fR] \fIFILE\fR
+\fBmtbl_verify\fR \fIFILE\fR [\fIFILE\fR]\&...
 .SH "DESCRIPTION"
 .sp
-\fBmtbl_dump\fR(1) prints all key\-value entries from an MTBL file to stdout, in file order\&. Each entry is printed on its own line, with double quotes surrounding the key and the value, with a single space character separating the two\&. Unprintable characters and embedded double quote characters are escaped using the Python string literal syntax\&.
-.SH "OPTIONS"
-.PP
-\fB\-s\fR
-.RS 4
-Silent mode (don\(cqt output anything)\&. Useful for benchmarking\&.
-.RE
+\fBmtbl_verify\fR(1) verifies the embedded data and index block checksums in the MTBL files specified on the command line\&.
+.sp
+Each filename specified on the command line will be verified, and a message indicating whether each file passed or failed will be printed to stdout\&. If a file fails, additional information about the failure will be printed to stderr\&.
+.sp
+If stdout is a terminal, periodic progress indications will be printed\&.
